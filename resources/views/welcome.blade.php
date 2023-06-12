@@ -19,8 +19,9 @@
                 font-family: 'Nunito', sans-serif;
             }
         </style>
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="antialiased">
-        MEZ
-    </body>
+
+    
+
 </html>
