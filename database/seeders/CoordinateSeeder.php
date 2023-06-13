@@ -31,7 +31,7 @@ class CoordinateSeeder extends Seeder
                 \DB::table('coordinates')->insert([
                     'row' => $row,
                     'column' => $key_2+1,
-                    'number' => intval(filter_var($number, FILTER_SANITIZE_NUMBER_INT))
+                    'number' => $number
                 ]);
             }
         }
