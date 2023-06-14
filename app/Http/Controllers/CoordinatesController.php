@@ -8,17 +8,14 @@ use Illuminate\Http\Request;
 
 class CoordinatesController extends Controller
 {
-    public function nch43()
+    public function nch43($lote, $samples, $row, $column)
     {
         $limit_row = [35, 70, 105, 140, 175, 210, 245, 250];
         $init_row = [1, 36, 71, 106, 141, 176, 211, 246];
         $limit_column = 20;
 
 
-        $lote = 42;
-        $samples = 5;
-        $row = 101;
-        $column = 18;
+        $initial_coordinate = $row.'/'.$column;
 
         $procedimiento = Procedure::where('max','>=',$lote)->where('min','<=',$lote)->first();
         $out = null;
@@ -28,14 +25,16 @@ class CoordinatesController extends Controller
         $valido=0;
         if($procedimiento->move == "utd"){
             while ($valido < $samples) { 
-                for ($i=1; $i < $columnas_a_usar; $i++) { 
-                    $out =  Coordinate::where('row',$row)->where('column', $column)->first()->number.
-                            Coordinate::where('row',$row)->where('column', $column+$i)->first()->number;
+                for ($i=0; $i < $columnas_a_usar; $i++) { 
+                    if(Coordinate::where('row',$row)->where('column', $column + $i)->count() == 0)
+                        dd($row, $column, $i);
+                    $out .=  Coordinate::where('row',$row)->where('column', $column + $i)->first()->number;
                 } 
 
-      
                 $numero = collect();
-                $this->operations($procedimiento, $out, $numero, $lote, $row, $column);
+                $this->operations($procedimiento, $out, $numero, $lote, $row, $column, $columnas_a_usar);
+
+ 
                 if($this->alreadyTake($numero, $salida))
                     $numero->put('valido', false);
                 if($numero['valido'])
@@ -43,11 +42,16 @@ class CoordinatesController extends Controller
                 
                 if(in_array($row, $limit_row)){
                     $row= $init_row[array_search($row, $limit_row)];
-                    $column .=$columnas_a_usar; 
+                    $column =$column + $columnas_a_usar; 
                 }else{
                     $row++;
                 }
-                                   
+
+                if($column + $columnas_a_usar > 20){
+                    $row = $init_row[array_search($row, $init_row)+1];
+                    $column = 1;
+                }
+
                 $out = "";
                 $salida[] = $numero;      
             }
@@ -59,7 +63,7 @@ class CoordinatesController extends Controller
                             break;
                         $numero = collect();
 
-                        $this->operations($procedimiento, $digit, $numero, $lote, $row, $column);
+                        $this->operations($procedimiento, $digit, $numero, $lote, $row, $column, $columnas_a_usar);
                         if($this->alreadyTake($numero, $salida))
                             $numero->put('valido', false);
                         if($numero['valido'])
@@ -74,7 +78,7 @@ class CoordinatesController extends Controller
                 while ($valido < $samples) { 
                     $number = intval(filter_var(Coordinate::where('row',$row)->where('column', $column)->first()->number, FILTER_SANITIZE_NUMBER_INT));
                     $numero = collect();
-                    $this->operations($procedimiento, $number, $numero, $lote, $row, $column);
+                    $this->operations($procedimiento, $number, $numero, $lote, $row, $column, $columnas_a_usar);
                     
                     if($this->alreadyTake($numero, $salida))
                         $numero->put('valido', false);
@@ -83,11 +87,13 @@ class CoordinatesController extends Controller
 
                     if($column == $limit_column){
                         $row++;
-                        $column =1; 
+                        $column = 1; 
                     }else{
                         $column++;
                     }
 
+                    if($row > 250)
+                        $row = 1;
                     
                     $out = "";
                     $salida[] = $numero;
@@ -102,7 +108,7 @@ class CoordinatesController extends Controller
             'data' => json_encode($salida),
             'lote' => $lote,
             'muestras' => $samples,
-            'inicial' => $row.'/'.$column
+            'inicial' => $initial_coordinate
         ]);
     }
 
@@ -116,9 +122,9 @@ class CoordinatesController extends Controller
         
     }
 
-    private function operations($procedimiento, $number, $numero, $lote, $row, $column){
+    private function operations($procedimiento, $number, $numero, $lote, $row, $column, $columnas_a_usar){
         $numero->put('fila', $row);
-        $numero->put('columna', $column);
+        $numero->put('columna', $column+$columnas_a_usar-1);
 
         $valor_original = str_split($number, $procedimiento->digits)[0];
 
@@ -137,9 +143,13 @@ class CoordinatesController extends Controller
                     $numero->put('valido', $procedimiento->max<=$lote);
                     $numero->put('operación', floor($number/$procedimiento->divider).' x '.$procedimiento->divider.' + '.$number%$procedimiento->divider.' = '.$number);
                     $numero->put('comentario', "Art. 8. El resto 0 de la tabla se leerá como ".$procedimiento->max);
+                    if($number%$procedimiento->divider>$lote)
+                        $numero->put('comentario','Valor final mayor al lote.');
                 }else{
                     $numero->put('valor_final', $number%$procedimiento->divider);
                     $numero->put('valido', $number%$procedimiento->divider<=$lote);
+                    if($number%$procedimiento->divider>$lote)
+                        $numero->put('comentario', 'Valor final mayor al lote.');
                     $numero->put('operación', floor($number/$procedimiento->divider).' x '.$procedimiento->divider.' + '.$number%$procedimiento->divider.' = '.$number);
                     if($number <= $lote)
                         $numero->put('operación', 'NA');
@@ -147,6 +157,8 @@ class CoordinatesController extends Controller
             }else{
                 $numero->put('valor_final', $number);
                 $numero->put('valido', $number<=$lote);
+                if($number>$lote)
+                        $numero->put('comentario', 'Valor final mayor al lote.');
                 $numero->put('operación', 'NA');
             }
             

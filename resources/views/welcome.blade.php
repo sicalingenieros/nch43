@@ -97,6 +97,10 @@
   </div>
 </header>
 
+@php
+  $aux = 1;
+@endphp
+
 <div class="py-2">Lote: {{ $lote }}</div>
 <div class="py-2">Muestras: {{ $muestras }}</div>
 <div class="py-2">Coordenadas iniciales: {{ $inicial }}</div>
@@ -107,23 +111,25 @@
         <table class="min-w-full text-left text-sm font-light">
           <thead class="border-b font-medium dark:border-neutral-500">
             <tr>
-              <th scope="col" class="px-6 py-2">#</th>
-              <th scope="col" class="px-6 py-2">Fila</th>
-              <th scope="col" class="px-6 py-2">Columna</th>
-              <th scope="col" class="px-6 py-2">Número tabla</th>
-              <th scope="col" class="px-6 py-2">Valor final</th>
-              <th scope="col" class="px-6 py-2">Cálculo</th>
+              <th scope="col" class="px-6 py-1">#</th>
+              <th scope="col" class="px-6 py-1">Fila</th>
+              <th scope="col" class="px-6 py-1">Columna</th>
+              <th scope="col" class="px-6 py-1">Número tabla</th>
+              <th scope="col" class="px-6 py-1">Valor final</th>
+              <th scope="col" class="px-6 py-3">Cálculo</th>
+              <th scope="col" class="px-6 py-3">Comentarios</th>
             </tr>
           </thead>
           <tbody>
           @foreach(json_decode($data) as $key => $coordenada)
             <tr class="border-b dark:border-neutral-500 {{$coordenada->valido ?'':'line-through' }}">
-              <td class="whitespace-nowrap px-6 py-2 font-medium">{{$key+1}}</td>
-              <td class="whitespace-nowrap px-6 py-2">{{$coordenada->fila}}</td>
-              <td class="whitespace-nowrap px-6 py-2">{{$coordenada->columna}}</td>
-              <td class="whitespace-nowrap px-6 py-2">{{$coordenada->valor_original}}</td>
-              <td class="whitespace-nowrap px-6 py-2">{{$coordenada->valor_final}}</td>
-              <td class="whitespace-nowrap px-6 py-2">{{$coordenada->operación}}</td>
+              <td class="whitespace-nowrap px-6 py-1 font-medium">{{ $coordenada->valido ? $aux++:'-'}}</td>
+              <td class="whitespace-nowrap px-6 py-1">{{$coordenada->fila}}</td>
+              <td class="whitespace-nowrap px-6 py-1">{{$coordenada->columna}}</td>
+              <td class="whitespace-nowrap px-6 py-1">{{$coordenada->valor_original}}</td>
+              <td class="whitespace-nowrap px-6 py-1">{{$coordenada->valor_final}}</td>
+              <td class="whitespace-nowrap px-6 py-3">{{$coordenada->operación}}</td>
+              <td class="whitespace-nowrap px-6 py-3">{{isset($coordenada->comentario) ? $coordenada->comentario:'-' }}</td>
             </tr>
             @endforeach
           </tbody>
