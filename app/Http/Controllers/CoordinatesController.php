@@ -124,7 +124,18 @@ class CoordinatesController extends Controller
 
     private function operations($procedimiento, $number, $numero, $lote, $row, $column, $columnas_a_usar){
         $numero->put('fila', $row);
-        $numero->put('columna', $column+$columnas_a_usar-1);
+        
+        $count = 0;
+        $column_to_show = '';
+        while($count < $columnas_a_usar ){
+            $column_to_show .= $column+$count.'|';
+            $count++;
+        }
+        $column_to_show = substr($column_to_show, 0, -1);
+        
+
+        //$numero->put('columna', $column+$columnas_a_usar-1);
+        $numero->put('columna', $column_to_show);
 
         $valor_original = str_split($number, $procedimiento->digits)[0];
 
