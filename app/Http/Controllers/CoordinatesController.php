@@ -28,7 +28,6 @@ class CoordinatesController extends Controller
             while ($valido < $samples) { 
                 for ($i=0; $i < $columnas_a_usar; $i++) { 
                     if(Coordinate::where('row',$row)->where('column', $column + $i)->count() == 0)
-                        dd($row, $column, $i);
                     $out .=  Coordinate::where('row',$row)->where('column', $column + $i)->first()->number;
                 } 
 
