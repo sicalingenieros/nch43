@@ -10,8 +10,9 @@ class CoordinatesController extends Controller
 {
     public function nch43($lote, $samples, $row, $column)
     {
-        $limit_row = [35, 70, 105, 140, 175, 210, 245, 250];
+        
         $init_row = [1, 36, 71, 106, 141, 176, 211, 246];
+        $limit_row = [35, 70, 105, 140, 175, 210, 245, 250];
         $limit_column = 20;
 
 
@@ -40,17 +41,22 @@ class CoordinatesController extends Controller
                 if($numero['valido'])
                     $valido++;
                 
-                if(in_array($row, $limit_row)){
-                    $row= $init_row[array_search($row, $limit_row)];
-                    $column =$column + $columnas_a_usar; 
+                if(in_array($row, $limit_row)){ //si la fila actual es la última de la pagina entro 
+                    if($column+$columnas_a_usar - 1 >= 20){
+                        $row++;
+                        $column = 1;
+                    }else{
+                        $row= $init_row[array_search($row, $limit_row)]; //seteo la fila con la inicial de su misma pagina
+                        $column = $column+$columnas_a_usar;
+                    }
                 }else{
                     $row++;
                 }
 
-                if($column + $columnas_a_usar > 20){
-                    $row = $init_row[array_search($row, $init_row)+1];
-                    $column = 1;
-                }
+
+
+                if($row > 250)
+                    $row = 1;
 
                 $out = "";
                 $salida[] = $numero;      
@@ -128,10 +134,10 @@ class CoordinatesController extends Controller
         $count = 0;
         $column_to_show = '';
         while($count < $columnas_a_usar ){
-            $column_to_show .= $column+$count.'|';
+            $column_to_show .= $column+$count.' | ';
             $count++;
         }
-        $column_to_show = substr($column_to_show, 0, -1);
+        $column_to_show = substr($column_to_show, 0, -2);
         
 
         //$numero->put('columna', $column+$columnas_a_usar-1);
