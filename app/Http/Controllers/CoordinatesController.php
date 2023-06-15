@@ -15,21 +15,26 @@ class CoordinatesController extends Controller
         $limit_row = [35, 70, 105, 140, 175, 210, 245, 250];
         $limit_column = 20;
 
-
         $initial_coordinate = $row.'/'.$column;
 
         $procedimiento = Procedure::where('max','>=',$lote)->where('min','<=',$lote)->first();
-        $out = null;
+
         $columnas_a_usar = round($procedimiento->digits/2);
 
+        $out = null;
         $salida = [];
         $valido=0;
+
+
         if($procedimiento->move == "utd"){
             while ($valido < $samples) { 
+
+                //En la variable $out quedan unidos los pares de números
+
                 for ($i=0; $i < $columnas_a_usar; $i++) { 
-                    if(Coordinate::where('row',$row)->where('column', $column + $i)->count() == 0)
                     $out .=  Coordinate::where('row',$row)->where('column', $column + $i)->first()->number;
                 } 
+
 
                 $numero = collect();
                 $this->operations($procedimiento, $out, $numero, $lote, $row, $column, $columnas_a_usar);
