@@ -25,6 +25,8 @@ class CoordinatesController extends Controller
         $salida = [];
         $valido=0;
 
+        $coordenadas = Coordinate::get();
+
 
         if($procedimiento->move == "utd"){
             while ($valido < $samples) { 
@@ -32,9 +34,9 @@ class CoordinatesController extends Controller
                 //En la variable $out quedan unidos los pares de números
 
                 for ($i=0; $i < $columnas_a_usar; $i++) { 
-                    if(Coordinate::where('row',$row)->where('column', $column + $i)->count() == 0)
+                    if($coordenadas->where('row',$row)->where('column', $column + $i)->count() == 0)
                         dd($row, $column);
-                    $out .=  Coordinate::where('row',$row)->where('column', $column + $i)->first()->number;
+                    $out .=  $coordenadas->where('row',$row)->where('column', $column + $i)->first()->number;
                 } 
 
 
@@ -71,7 +73,7 @@ class CoordinatesController extends Controller
         }else{
             if($procedimiento->digits == 1){
                 while ($valido < $samples) {
-                    foreach(str_split(Coordinate::where('row',$row)->where('column', $column)->first()->number, $procedimiento->digits) as $digit){
+                    foreach(str_split($coordenadas->where('row',$row)->where('column', $column)->first()->number, $procedimiento->digits) as $digit){
                         if($valido >= $samples)
                             break;
                         $numero = collect();
@@ -89,7 +91,7 @@ class CoordinatesController extends Controller
             }elseif($procedimiento->digits == 2){
                 
                 while ($valido < $samples) { 
-                    $number = intval(filter_var(Coordinate::where('row',$row)->where('column', $column)->first()->number, FILTER_SANITIZE_NUMBER_INT));
+                    $number = intval(filter_var($coordenadas->where('row',$row)->where('column', $column)->first()->number, FILTER_SANITIZE_NUMBER_INT));
                     $numero = collect();
                     $this->operations($procedimiento, $number, $numero, $lote, $row, $column, $columnas_a_usar);
                     
