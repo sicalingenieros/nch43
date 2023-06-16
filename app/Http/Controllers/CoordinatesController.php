@@ -32,6 +32,8 @@ class CoordinatesController extends Controller
                 //En la variable $out quedan unidos los pares de números
 
                 for ($i=0; $i < $columnas_a_usar; $i++) { 
+                    if(Coordinate::where('row',$row)->where('column', $column + $i)->count() == 0)
+                        dd($row, $column);
                     $out .=  Coordinate::where('row',$row)->where('column', $column + $i)->first()->number;
                 } 
 
@@ -57,10 +59,11 @@ class CoordinatesController extends Controller
                     $row++;
                 }
 
-
-
                 if($row > 250)
                     $row = 1;
+
+                if($column+$columnas_a_usar - 1 >= 20)
+                    $column = 1;
 
                 $out = "";
                 $salida[] = $numero;      
