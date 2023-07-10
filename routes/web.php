@@ -14,4 +14,4 @@ use App\Http\Controllers\CoordinatesController;
 |
 */
 
-Route::get('/nch43/{lote}/{muestras}/{fila}/{columna}', [CoordinatesController::class, 'nch43']);
+Route::get('/{lote}/{muestras}/{fila}/{columna}', [CoordinatesController::class, 'nch43']);
